@@ -1,0 +1,475 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8"/>
+<title>Evidencia de Mantenimiento Preventivo — Template</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 10px;
+    background: #fff;
+    color: #000;
+    width: 794px;
+  }
+  .page {
+    width: 794px;
+    min-height: 1123px;
+    padding: 18px 28px 24px;
+    background: #fff;
+  }
+
+  /* ── Header ── */
+  .doc-header {
+    display: flex;
+    align-items: center;
+    margin-bottom: 5px;
+    gap: 10px;
+  }
+  .logo-block {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    flex: 0 0 auto;
+  }
+  .logo-text {
+    font-size: 7px;
+    font-weight: bold;
+    color: #444;
+    line-height: 1.3;
+    text-transform: uppercase;
+  }
+  .logo-shield {
+    font-size: 20px;
+  }
+  .doc-title-block {
+    flex: 1;
+    text-align: center;
+    font-size: 11px;
+    font-weight: bold;
+    letter-spacing: 0.8px;
+    text-transform: uppercase;
+  }
+
+  .arrendador-row {
+    font-size: 9px;
+    font-weight: bold;
+    margin-bottom: 7px;
+    text-transform: uppercase;
+  }
+  .arrendador-row .arrendador-name {
+    color: #1B4FD8;
+    font-weight: bold;
+  }
+
+  /* ── Field rows ── */
+  .section-label {
+    text-align: center;
+    font-size: 9px;
+    font-weight: bold;
+    text-transform: uppercase;
+    margin-bottom: 5px;
+    letter-spacing: 0.5px;
+  }
+  .fields-row {
+    display: flex;
+    align-items: baseline;
+    gap: 14px;
+    margin-bottom: 5px;
+  }
+  .field-item {
+    display: flex;
+    align-items: baseline;
+    gap: 4px;
+    flex: 1;
+  }
+  .field-item.wide { flex: 1.4; }
+  .field-item.narrow { flex: 0.8; }
+  .field-label {
+    font-size: 8px;
+    font-weight: bold;
+    white-space: nowrap;
+    text-transform: uppercase;
+    flex-shrink: 0;
+  }
+  .field-value {
+    flex: 1;
+    border-bottom: 1px solid #000;
+    font-size: 9px;
+    padding: 0 2px 1px;
+    min-height: 13px;
+    min-width: 60px;
+  }
+
+  /* ── Description box ── */
+  .desc-section {
+    border: 1.5px solid #000;
+    margin: 8px 0;
+  }
+  .box-header {
+    background: #c8c8c8;
+    text-align: center;
+    font-size: 9px;
+    font-weight: bold;
+    text-transform: uppercase;
+    padding: 2px 4px;
+    border-bottom: 1px solid #000;
+    letter-spacing: 0.3px;
+  }
+  .box-subheader {
+    font-size: 8.5px;
+    font-weight: bold;
+    text-transform: uppercase;
+    padding: 2px 6px;
+    border-bottom: 1px solid #000;
+    display: flex;
+    gap: 4px;
+    align-items: baseline;
+  }
+  .box-subheader .field-value {
+    min-width: 120px;
+  }
+  .desc-body {
+    min-height: 90px;
+    padding: 6px 8px;
+    font-size: 9px;
+    line-height: 1.5;
+    white-space: pre-wrap;
+  }
+
+  /* ── Photo sections ── */
+  .photos-section {
+    border: 1.5px solid #000;
+    margin-bottom: 8px;
+  }
+
+  /* Section 1: Piezas / Tablero */
+  .ps1-body {
+    display: flex;
+    border-top: none;
+  }
+  .ps1-left {
+    flex: 0 0 48%;
+    border-right: 1.5px solid #000;
+    display: flex;
+    flex-direction: column;
+  }
+  .ps1-right {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+  }
+  .col-header {
+    background: #c8c8c8;
+    text-align: center;
+    font-size: 8.5px;
+    font-weight: bold;
+    text-transform: uppercase;
+    padding: 2px 4px;
+    border-bottom: 1px solid #000;
+    letter-spacing: 0.3px;
+  }
+  .photo-slot-large {
+    height: 188px;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #fff;
+  }
+  .photo-slot-large img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+  }
+
+  /* Two-cell row (Km / Unidad foto) */
+  .photo-pair {
+    display: flex;
+    flex: 1;
+  }
+  .photo-cell {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    border-right: 1px solid #000;
+    overflow: hidden;
+  }
+  .photo-cell:last-child { border-right: none; }
+  .cell-label {
+    text-align: center;
+    font-size: 7.5px;
+    font-weight: bold;
+    text-transform: uppercase;
+    border-bottom: 1px solid #000;
+    padding: 2px;
+    letter-spacing: 0.2px;
+  }
+  .cell-img-wrap {
+    flex: 1;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 170px;
+    background: #fff;
+  }
+  .cell-img-wrap img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+  }
+
+  /* Section 2: Evidence (6 slots) */
+  .ps2-body {
+    display: flex;
+  }
+  .evidence-half {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    border-right: 1.5px solid #000;
+  }
+  .evidence-half:last-child { border-right: none; }
+  .half-header {
+    background: #e0e0e0;
+    text-align: center;
+    font-size: 8.5px;
+    font-weight: bold;
+    text-transform: uppercase;
+    padding: 2px;
+    border-bottom: 1px solid #000;
+    letter-spacing: 0.5px;
+  }
+  .evidence-three {
+    display: flex;
+    height: 168px;
+  }
+  .evidence-cell {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    border-right: 1px solid #000;
+    overflow: hidden;
+  }
+  .evidence-cell:last-child { border-right: none; }
+  .evidence-img-wrap {
+    flex: 1;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #fff;
+  }
+  .evidence-img-wrap img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+  }
+
+  /* ── Signatures ── */
+  .sigs-row {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 18px;
+    margin-bottom: 20px;
+    padding: 0 20px;
+  }
+  .sig-block {
+    width: 44%;
+    text-align: center;
+  }
+  .sig-line {
+    border-top: 1px solid #000;
+    margin-bottom: 4px;
+  }
+  .sig-label {
+    font-size: 7.5px;
+    font-weight: bold;
+    text-transform: uppercase;
+    letter-spacing: 0.2px;
+  }
+  .sig-center {
+    text-align: center;
+    margin-top: 10px;
+  }
+  .sig-center .sig-line {
+    width: 55%;
+    margin: 0 auto 4px;
+  }
+  .note-text {
+    font-size: 8px;
+    color: #DC2626;
+    text-align: center;
+    margin-top: 10px;
+    font-style: italic;
+    font-weight: bold;
+  }
+</style>
+</head>
+<body>
+<div class="page" id="certificate-page">
+
+  <!-- Header -->
+  <div class="doc-header">
+    <div class="logo-block">
+      <div class="logo-text">NL<br>INSTITUTO<br>DE MOVILIDAD<br>Y ACCESIBILIDAD</div>
+      <div class="logo-shield">🛡️</div>
+    </div>
+    <div class="doc-title-block">EVIDENCIA DE MANTENIMIENTO PREVENTIVO</div>
+  </div>
+
+  <div class="arrendador-row">
+    ARRENDADOR: <span class="arrendador-name">INTELIGENCIA Y SOLUCIONES EN MOVIMIENTO, S.A DE C.V</span>
+  </div>
+
+  <!-- General data fields -->
+  <div class="section-label">DATOS GENERALES</div>
+
+  <div class="fields-row">
+    <div class="field-item narrow">
+      <span class="field-label">UNIDAD:</span>
+      <span class="field-value" id="tpl-unidad"></span>
+    </div>
+    <div class="field-item">
+      <span class="field-label">MARCA:</span>
+      <span class="field-value" id="tpl-marca"></span>
+    </div>
+    <div class="field-item wide">
+      <span class="field-label">AÑO/MODELO:</span>
+      <span class="field-value" id="tpl-modelo"></span>
+    </div>
+  </div>
+
+  <div class="fields-row">
+    <div class="field-item narrow">
+      <span class="field-label">ODOMETRO:</span>
+      <span class="field-value" id="tpl-odometro"></span>
+    </div>
+    <div class="field-item">
+      <span class="field-label">PLACAS:</span>
+      <span class="field-value" id="tpl-placas"></span>
+    </div>
+    <div class="field-item wide">
+      <span class="field-label">VIN:</span>
+      <span class="field-value" id="tpl-vin"></span>
+    </div>
+  </div>
+
+  <div class="fields-row">
+    <div class="field-item narrow">
+      <span class="field-label">FECHA:</span>
+      <span class="field-value" id="tpl-fecha"></span>
+    </div>
+    <div class="field-item wide">
+      <span class="field-label">TRANSPORTISTA:</span>
+      <span class="field-value" id="tpl-transportista"></span>
+    </div>
+  </div>
+
+  <!-- Description -->
+  <div class="desc-section">
+    <div class="box-header">DESCRIPCION DEL TRABAJO REALIZADO</div>
+    <div class="box-subheader">
+      # DE MANTENIMIENTO PREVENTIVO:
+      <span class="field-value" id="tpl-num-mant"></span>
+    </div>
+    <div class="desc-body" id="tpl-descripcion"></div>
+  </div>
+
+  <!-- Photo section 1: Piezas nuevas + Tablero/Económico -->
+  <div class="photos-section">
+    <div class="ps1-body">
+      <div class="ps1-left">
+        <div class="col-header">FOTOGRAFIAS DE LA PIEZAS NUEVAS</div>
+        <div class="photo-slot-large" id="tpl-slot-piezas">
+          <!-- image injected here -->
+        </div>
+      </div>
+      <div class="ps1-right">
+        <div class="col-header">FOTOGRAFIAS DEL TABLERO Y ECONOMICO DEL AUTOBUS</div>
+        <div class="photo-pair">
+          <div class="photo-cell">
+            <div class="cell-label">KILOMETRAJE</div>
+            <div class="cell-img-wrap" id="tpl-slot-km"><!-- image --></div>
+          </div>
+          <div class="photo-cell">
+            <div class="cell-label">UNIDAD</div>
+            <div class="cell-img-wrap" id="tpl-slot-unidad-foto"><!-- image --></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Photo section 2: Evidence before / after -->
+  <div class="photos-section">
+    <div class="box-header">FOTOGRAFIAS DE LA EVIDENCIA DEL TRABAJO</div>
+    <div class="ps2-body">
+      <div class="evidence-half">
+        <div class="half-header">ANTES</div>
+        <div class="evidence-three">
+          <div class="evidence-cell">
+            <div class="cell-label">FILTROS</div>
+            <div class="evidence-img-wrap" id="tpl-slot-antes-filtros"><!-- image --></div>
+          </div>
+          <div class="evidence-cell">
+            <div class="cell-label">ACEITE MOTOR</div>
+            <div class="evidence-img-wrap" id="tpl-slot-antes-aceite"><!-- image --></div>
+          </div>
+          <div class="evidence-cell">
+            <div class="cell-label">DIFERENCIAL</div>
+            <div class="evidence-img-wrap" id="tpl-slot-antes-diferencial"><!-- image --></div>
+          </div>
+        </div>
+      </div>
+      <div class="evidence-half">
+        <div class="half-header">DESPUES</div>
+        <div class="evidence-three">
+          <div class="evidence-cell">
+            <div class="cell-label">FILTROS</div>
+            <div class="evidence-img-wrap" id="tpl-slot-despues-filtros"><!-- image --></div>
+          </div>
+          <div class="evidence-cell">
+            <div class="cell-label">ACEITE MOTOR</div>
+            <div class="evidence-img-wrap" id="tpl-slot-despues-aceite"><!-- image --></div>
+          </div>
+          <div class="evidence-cell">
+            <div class="cell-label">DIFERENCIAL</div>
+            <div class="evidence-img-wrap" id="tpl-slot-despues-diferencial"><!-- image --></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Signatures -->
+  <div class="sigs-row">
+    <div class="sig-block">
+      <div class="sig-line"></div>
+      <div class="sig-label">NOMBRE Y FIRMA DE ARRENDADORA</div>
+    </div>
+    <div class="sig-block">
+      <div class="sig-line"></div>
+      <div class="sig-label">NOMBRE Y FIRMA DE TRANSPORTISTA</div>
+    </div>
+  </div>
+
+  <div class="sig-center">
+    <div class="sig-line"></div>
+    <div class="sig-label">
+      NOMBRE Y FIRMA DE GESTION DEL TRANSPORTE DEL INSTITUTO<br>
+      DE MOVILIDAD Y ACCESIBILIDAD DE NUEVO LEON
+    </div>
+  </div>
+
+  <div class="note-text">
+    *ANEXAR FOTO DE LA INE DE AMBOS LADOS DE LAS PERSONAS QUE FIRMAN A COLOR EN 1 SOLA HOJA.
+  </div>
+
+</div>
+</body>
+</html>

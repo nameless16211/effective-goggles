@@ -1,0 +1,807 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0"/>
+<title>Mantenimiento Preventivo</title>
+
+<!-- PWA -->
+<link rel="manifest" href="/manifest.json"/>
+<meta name="theme-color" content="#1B4FD8"/>
+<meta name="mobile-web-app-capable" content="yes"/>
+<meta name="apple-mobile-web-app-capable" content="yes"/>
+<meta name="apple-mobile-web-app-status-bar-style" content="default"/>
+<meta name="apple-mobile-web-app-title" content="MantPrev"/>
+<link rel="apple-touch-icon" sizes="180x180" href="/icons/icon-180.png"/>
+<link rel="icon" type="image/png" sizes="192x192" href="/icons/icon-192.png"/>
+<link rel="icon" type="image/png" sizes="32x32"  href="/icons/icon-32.png"/>
+
+<!-- PDF engine: html2canvas + jsPDF -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="pdf-template.js"></script>
+
+<style>
+  :root {
+    --blue: #1B4FD8;
+    --blue-dark: #1340B0;
+    --blue-light: #EEF2FF;
+    --blue-mid: #3B6EF8;
+    --gray-bg: #F4F6FB;
+    --gray-card: #FFFFFF;
+    --gray-border: #DDE3F0;
+    --gray-text: #6B7A99;
+    --text: #111827;
+    --red: #DC2626;
+    --green: #16A34A;
+    --radius: 14px;
+    --shadow: 0 2px 16px rgba(27,79,216,0.08);
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'Segoe UI', system-ui, sans-serif;
+    background: var(--gray-bg);
+    color: var(--text);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    max-width: 430px;
+    margin: 0 auto;
+  }
+
+  /* ── Header ── */
+  .header {
+    background: #fff;
+    border-bottom: 1px solid var(--gray-border);
+    padding: 16px 20px 12px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    position: sticky; top: 0; z-index: 10;
+  }
+  .header-back {
+    width: 34px; height: 34px;
+    border: none; background: var(--gray-bg);
+    border-radius: 50%; cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 18px; color: var(--text);
+  }
+  .header-title { font-size: 17px; font-weight: 700; flex: 1; }
+  .step-badge {
+    font-size: 11px; font-weight: 600;
+    color: var(--blue); background: var(--blue-light);
+    padding: 3px 10px; border-radius: 20px;
+  }
+
+  /* ── Progress bar ── */
+  .progress-wrap { padding: 14px 20px 0; background: #fff; border-bottom: 1px solid var(--gray-border); }
+  .progress-label { display: flex; justify-content: space-between; font-size: 12px; color: var(--gray-text); margin-bottom: 8px; }
+  .progress-track { height: 4px; background: var(--gray-border); border-radius: 4px; overflow: hidden; margin-bottom: 14px; }
+  .progress-fill { height: 100%; background: var(--blue); border-radius: 4px; transition: width 0.4s cubic-bezier(.4,0,.2,1); }
+
+  /* ── Screen ── */
+  .screen { display: none; flex: 1; flex-direction: column; }
+  .screen.active { display: flex; }
+  .screen-body { padding: 20px; flex: 1; overflow-y: auto; }
+
+  /* ── Card ── */
+  .card {
+    background: var(--gray-card);
+    border-radius: var(--radius);
+    border: 1px solid var(--gray-border);
+    box-shadow: var(--shadow);
+    padding: 20px;
+    margin-bottom: 14px;
+  }
+
+  /* ── Form fields ── */
+  .field { margin-bottom: 18px; }
+  .field:last-child { margin-bottom: 0; }
+  label { display: block; font-size: 13px; font-weight: 600; color: var(--text); margin-bottom: 6px; }
+  label .req { color: var(--red); }
+  .input-wrap { position: relative; }
+  input[type=text], input[type=number], input[type=date], select, textarea {
+    width: 100%; padding: 12px 14px;
+    border: 1.5px solid var(--gray-border);
+    border-radius: 10px; font-size: 15px;
+    background: #fff; color: var(--text);
+    outline: none; transition: border-color .2s;
+    -webkit-appearance: none;
+    font-family: inherit;
+  }
+  input:focus, select:focus, textarea:focus { border-color: var(--blue); }
+  input::placeholder, textarea::placeholder { color: #C0C7D8; }
+  textarea { resize: vertical; min-height: 80px; line-height: 1.5; }
+  .input-icon {
+    position: absolute; right: 12px; top: 50%; transform: translateY(-50%);
+    font-size: 18px; pointer-events: none;
+  }
+  .input-suffix {
+    position: absolute; right: 14px; top: 50%; transform: translateY(-50%);
+    font-size: 12px; font-weight: 600; color: var(--gray-text);
+  }
+  .info-box {
+    background: var(--blue-light); border-radius: 10px;
+    padding: 12px 14px; display: flex; gap: 10px;
+    font-size: 13px; color: #2a4baa; line-height: 1.5;
+  }
+  .info-box .icon { font-size: 16px; flex-shrink: 0; margin-top: 1px; }
+
+  /* two-col field row */
+  .field-row { display: flex; gap: 12px; }
+  .field-row .field { flex: 1; }
+
+  /* ── Photo slots ── */
+  .slot-section-label {
+    font-size: 12px; font-weight: 700; color: var(--gray-text);
+    text-transform: uppercase; letter-spacing: .5px;
+    margin-bottom: 10px; margin-top: 4px;
+  }
+  .photo-grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .photo-grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; }
+  .photo-slot {
+    border: 2px dashed var(--gray-border);
+    border-radius: 10px;
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    cursor: pointer; background: #fff;
+    transition: border-color .2s, background .2s;
+    position: relative; overflow: hidden;
+    font-size: 12px; color: var(--gray-text);
+    gap: 4px;
+  }
+  .photo-slot-tall { aspect-ratio: 4/3; }
+  .photo-slot-sq   { aspect-ratio: 1; }
+  .photo-slot:hover { border-color: var(--blue); background: var(--blue-light); }
+  .photo-slot.has-image { border-style: solid; border-color: var(--blue); }
+  .photo-slot img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+  .slot-label {
+    position: relative; z-index: 1;
+    font-size: 10px; font-weight: 700; text-transform: uppercase;
+    letter-spacing: .3px; color: var(--gray-text);
+    background: rgba(255,255,255,.88);
+    padding: 2px 7px; border-radius: 20px;
+    text-align: center; line-height: 1.3;
+  }
+  .camera-icon { font-size: 20px; }
+  .photo-slot.has-image .camera-icon { display: none; }
+  .photo-slot.has-image .tap-text { display: none; }
+  .photo-slot input[type=file] { display: none; }
+  .slot-check {
+    position: absolute; top: 5px; right: 5px;
+    width: 18px; height: 18px; border-radius: 50%;
+    background: var(--blue); display: none;
+    align-items: center; justify-content: center;
+    font-size: 10px; color: #fff; z-index: 2;
+  }
+  .photo-slot.has-image .slot-check { display: flex; }
+  .tap-text { font-size: 10px; color: var(--gray-text); }
+  .upload-count { font-size: 13px; color: var(--gray-text); margin-top: 10px; text-align: center; }
+
+  /* full-width photo slot (Piezas Nuevas) */
+  .photo-slot-full {
+    width: 100%; aspect-ratio: 16/9;
+    border: 2px dashed var(--gray-border);
+    border-radius: 10px;
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    cursor: pointer; background: #fff;
+    transition: border-color .2s, background .2s;
+    position: relative; overflow: hidden;
+    gap: 4px;
+    margin-bottom: 10px;
+  }
+  .photo-slot-full:hover { border-color: var(--blue); background: var(--blue-light); }
+  .photo-slot-full.has-image { border-style: solid; border-color: var(--blue); }
+  .photo-slot-full img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+  .photo-slot-full input[type=file] { display: none; }
+  .photo-slot-full .slot-check { position: absolute; top: 8px; right: 8px; width: 20px; height: 20px; border-radius: 50%; background: var(--blue); display: none; align-items: center; justify-content: center; font-size: 11px; color: #fff; z-index: 2; }
+  .photo-slot-full.has-image .slot-check { display: flex; }
+  .photo-slot-full.has-image .camera-icon { display: none; }
+  .photo-slot-full.has-image .tap-text { display: none; }
+  .photo-slot-full .slot-label { position: relative; z-index: 1; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .3px; color: var(--gray-text); background: rgba(255,255,255,.88); padding: 3px 10px; border-radius: 20px; }
+
+  /* ── CTA button ── */
+  .footer-cta {
+    padding: 16px 20px;
+    background: #fff;
+    border-top: 1px solid var(--gray-border);
+    position: sticky; bottom: 0;
+  }
+  .btn-primary {
+    width: 100%; padding: 16px;
+    background: var(--blue); color: #fff;
+    border: none; border-radius: 12px;
+    font-size: 16px; font-weight: 700;
+    cursor: pointer; display: flex;
+    align-items: center; justify-content: center; gap: 8px;
+    transition: background .15s, transform .1s;
+    letter-spacing: .2px;
+  }
+  .btn-primary:hover { background: var(--blue-dark); }
+  .btn-primary:active { transform: scale(.98); }
+  .btn-primary:disabled { background: #C0C7D8; cursor: not-allowed; transform: none; }
+  .btn-outline {
+    width: 100%; padding: 15px;
+    background: #fff; color: var(--blue);
+    border: 2px solid var(--blue); border-radius: 12px;
+    font-size: 16px; font-weight: 700;
+    cursor: pointer; display: flex;
+    align-items: center; justify-content: center; gap: 8px;
+    transition: background .15s;
+    margin-top: 10px;
+  }
+  .btn-outline:hover { background: var(--blue-light); }
+
+  /* ── Processing / success screen ── */
+  .success-icon {
+    width: 80px; height: 80px;
+    background: var(--blue); border-radius: 20px;
+    display: flex; align-items: center; justify-content: center;
+    margin: 0 auto 20px; position: relative;
+  }
+  .success-icon svg { width: 42px; color: #fff; }
+  .badge-gear {
+    position: absolute; top: -8px; right: -8px;
+    width: 26px; height: 26px; background: var(--text);
+    border-radius: 50%; display: flex; align-items: center; justify-content: center;
+    font-size: 14px;
+  }
+  .result-title { font-size: 22px; font-weight: 800; text-align: center; margin-bottom: 8px; line-height: 1.2; }
+  .result-sub { font-size: 14px; color: var(--gray-text); text-align: center; margin-bottom: 24px; line-height: 1.5; }
+  .summary-card { background: var(--gray-bg); border-radius: 12px; padding: 16px; }
+  .summary-row { margin-bottom: 14px; }
+  .summary-row:last-child { margin-bottom: 0; }
+  .summary-label { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .6px; color: var(--gray-text); margin-bottom: 3px; }
+  .summary-value { font-size: 15px; font-weight: 600; }
+  .summary-mono {
+    background: #fff; border: 1px solid var(--gray-border);
+    border-radius: 6px; padding: 6px 10px;
+    font-family: monospace; font-size: 14px; color: var(--text);
+  }
+  .status-dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: var(--green); margin-right: 6px; }
+  .status-active { color: var(--green); font-weight: 700; font-size: 15px; }
+  .encrypt-banner {
+    border-radius: 12px; overflow: hidden;
+    height: 80px; position: relative;
+    background: linear-gradient(135deg, #0f1f5c 0%, #1B4FD8 100%);
+    display: flex; align-items: center; justify-content: center;
+    margin: 14px 0; color: #fff; font-size: 13px; font-weight: 600;
+    gap: 8px;
+  }
+
+  /* ── Nav bar ── */
+  .navbar {
+    display: grid; grid-template-columns: 1fr 1fr 1fr;
+    background: #fff; border-top: 1px solid var(--gray-border);
+    padding: 8px 0 4px;
+  }
+  .nav-item {
+    display: flex; flex-direction: column;
+    align-items: center; gap: 3px;
+    font-size: 11px; font-weight: 600;
+    color: var(--gray-text); cursor: pointer;
+    padding: 4px 0;
+  }
+  .nav-item.active { color: var(--blue); }
+  .nav-icon {
+    width: 36px; height: 36px; border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 18px;
+  }
+  .nav-item.active .nav-icon { background: var(--blue); color: #fff; }
+
+  /* ── Misc ── */
+  .divider { height: 1px; background: var(--gray-border); margin: 16px 0; }
+  .section-title { font-size: 15px; font-weight: 700; margin-bottom: 14px; }
+  .error-msg { font-size: 12px; color: var(--red); margin-top: 4px; display: none; }
+  .field.error input,
+  .field.error textarea { border-color: var(--red); }
+  .field.error .error-msg { display: block; }
+</style>
+</head>
+<body>
+
+
+<!-- ══════════════════════════════════════
+     STEP 1 — Vehicle & Work Details
+══════════════════════════════════════ -->
+<div id="screen1" class="screen active">
+  <div class="header">
+    <button class="header-back" onclick="history.back()">←</button>
+    <span class="header-title">Nuevo Registro</span>
+    <span class="step-badge">Paso 1 de 3</span>
+  </div>
+  <div class="progress-wrap">
+    <div class="progress-label"><span>Datos del Vehículo</span><span>33%</span></div>
+    <div class="progress-track"><div class="progress-fill" style="width:33%"></div></div>
+  </div>
+
+  <div class="screen-body">
+
+    <!-- General data -->
+    <div class="card">
+      <div class="section-title">Datos Generales</div>
+
+      <div class="field-row">
+        <div class="field" id="f-unidad">
+          <label>Unidad <span class="req">*</span></label>
+          <input id="inp-unidad" type="text" placeholder="Ej. U-042" oninput="clearError('f-unidad')"/>
+          <div class="error-msg">Campo requerido</div>
+        </div>
+        <div class="field">
+          <label>Marca</label>
+          <input id="inp-marca" type="text" placeholder="Ej. Mercedes"/>
+        </div>
+      </div>
+
+      <div class="field-row">
+        <div class="field">
+          <label>Año / Modelo</label>
+          <input id="inp-modelo" type="text" placeholder="Ej. 2022 Sprinter"/>
+        </div>
+        <div class="field" id="f-odometro">
+          <label>Odómetro <span class="req">*</span></label>
+          <div class="input-wrap">
+            <input id="inp-odometro" type="number" placeholder="0" min="0" oninput="clearError('f-odometro')"/>
+            <span class="input-suffix">km</span>
+          </div>
+          <div class="error-msg">Campo requerido</div>
+        </div>
+      </div>
+
+      <div class="field-row">
+        <div class="field" id="f-placas">
+          <label>Placas <span class="req">*</span></label>
+          <input id="inp-placas" type="text" placeholder="ABC-123" oninput="clearError('f-placas')"/>
+          <div class="error-msg">Campo requerido</div>
+        </div>
+        <div class="field" id="f-vin">
+          <label>VIN <span class="req">*</span></label>
+          <input id="inp-vin" type="text" placeholder="17 dígitos" style="font-family:monospace" oninput="clearError('f-vin')"/>
+          <div class="error-msg">Campo requerido</div>
+        </div>
+      </div>
+
+      <div class="field-row">
+        <div class="field" id="f-fecha">
+          <label>Fecha <span class="req">*</span></label>
+          <input id="inp-fecha" type="date" oninput="clearError('f-fecha')"/>
+          <div class="error-msg">Campo requerido</div>
+        </div>
+        <div class="field" id="f-transportista">
+          <label>Transportista <span class="req">*</span></label>
+          <input id="inp-transportista" type="text" placeholder="Nombre completo" oninput="clearError('f-transportista')"/>
+          <div class="error-msg">Campo requerido</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Work description -->
+    <div class="card">
+      <div class="section-title">Descripción del Trabajo</div>
+
+      <div class="field" id="f-num-mant">
+        <label># Mantenimiento Preventivo <span class="req">*</span></label>
+        <input id="inp-num-mant" type="text" placeholder="Ej. MP-2024-001" oninput="clearError('f-num-mant')"/>
+        <div class="error-msg">Campo requerido</div>
+      </div>
+
+      <div class="field">
+        <label>Descripción del trabajo realizado</label>
+        <textarea id="inp-descripcion" placeholder="Detalle los trabajos realizados…" rows="4"></textarea>
+      </div>
+    </div>
+
+    <div class="info-box" style="margin-bottom:14px">
+      <span class="icon">ℹ️</span>
+      <span>En el siguiente paso se le pedirá cargar fotografías de evidencia del mantenimiento.</span>
+    </div>
+  </div>
+
+  <div class="footer-cta">
+    <button class="btn-primary" onclick="goStep2()">Continuar a Fotografías →</button>
+  </div>
+</div>
+
+
+<!-- ══════════════════════════════════════
+     STEP 2 — Photo capture (9 slots)
+══════════════════════════════════════ -->
+<div id="screen2" class="screen">
+  <div class="header">
+    <button class="header-back" onclick="goBack(1)">←</button>
+    <span class="header-title">Captura de Evidencia</span>
+    <span class="step-badge">Paso 2 de 3</span>
+  </div>
+  <div class="progress-wrap">
+    <div class="progress-label"><span>Fotografías</span><span>66%</span></div>
+    <div class="progress-track"><div class="progress-fill" style="width:66%"></div></div>
+  </div>
+
+  <div class="screen-body">
+
+    <!-- Piezas Nuevas + Tablero -->
+    <div class="card">
+      <div class="slot-section-label">Piezas y Tablero</div>
+
+      <!-- Slot 0: Piezas Nuevas — full width -->
+      <div class="photo-slot-full" id="slot0" onclick="triggerFile(0)">
+        <input type="file" id="file0" accept="image/*" onchange="handleFile(0,this)"/>
+        <span class="camera-icon">📷</span>
+        <span class="tap-text">Toca para capturar</span>
+        <span class="slot-label">📦 Piezas Nuevas</span>
+        <span class="slot-check">✓</span>
+      </div>
+
+      <!-- Slots 1-2: Kilometraje / Unidad -->
+      <div class="photo-grid-2">
+        <div class="photo-slot photo-slot-sq" id="slot1" onclick="triggerFile(1)">
+          <input type="file" id="file1" accept="image/*" onchange="handleFile(1,this)"/>
+          <span class="camera-icon">📷</span>
+          <span class="tap-text">Toca</span>
+          <span class="slot-label">Kilometraje</span>
+          <span class="slot-check">✓</span>
+        </div>
+        <div class="photo-slot photo-slot-sq" id="slot2" onclick="triggerFile(2)">
+          <input type="file" id="file2" accept="image/*" onchange="handleFile(2,this)"/>
+          <span class="camera-icon">📷</span>
+          <span class="tap-text">Toca</span>
+          <span class="slot-label">Unidad (foto)</span>
+          <span class="slot-check">✓</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Before -->
+    <div class="card">
+      <div class="slot-section-label">Antes del Trabajo</div>
+      <div class="photo-grid-3">
+        <div class="photo-slot photo-slot-sq" id="slot3" onclick="triggerFile(3)">
+          <input type="file" id="file3" accept="image/*" onchange="handleFile(3,this)"/>
+          <span class="camera-icon">📷</span>
+          <span class="slot-label">Filtros</span>
+          <span class="slot-check">✓</span>
+        </div>
+        <div class="photo-slot photo-slot-sq" id="slot4" onclick="triggerFile(4)">
+          <input type="file" id="file4" accept="image/*" onchange="handleFile(4,this)"/>
+          <span class="camera-icon">📷</span>
+          <span class="slot-label">Aceite Motor</span>
+          <span class="slot-check">✓</span>
+        </div>
+        <div class="photo-slot photo-slot-sq" id="slot5" onclick="triggerFile(5)">
+          <input type="file" id="file5" accept="image/*" onchange="handleFile(5,this)"/>
+          <span class="camera-icon">📷</span>
+          <span class="slot-label">Diferencial</span>
+          <span class="slot-check">✓</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- After -->
+    <div class="card">
+      <div class="slot-section-label">Después del Trabajo</div>
+      <div class="photo-grid-3">
+        <div class="photo-slot photo-slot-sq" id="slot6" onclick="triggerFile(6)">
+          <input type="file" id="file6" accept="image/*" onchange="handleFile(6,this)"/>
+          <span class="camera-icon">📷</span>
+          <span class="slot-label">Filtros</span>
+          <span class="slot-check">✓</span>
+        </div>
+        <div class="photo-slot photo-slot-sq" id="slot7" onclick="triggerFile(7)">
+          <input type="file" id="file7" accept="image/*" onchange="handleFile(7,this)"/>
+          <span class="camera-icon">📷</span>
+          <span class="slot-label">Aceite Motor</span>
+          <span class="slot-check">✓</span>
+        </div>
+        <div class="photo-slot photo-slot-sq" id="slot8" onclick="triggerFile(8)">
+          <input type="file" id="file8" accept="image/*" onchange="handleFile(8,this)"/>
+          <span class="camera-icon">📷</span>
+          <span class="slot-label">Diferencial</span>
+          <span class="slot-check">✓</span>
+        </div>
+      </div>
+    </div>
+
+    <div id="upload-count" class="upload-count" style="margin-bottom:16px">0 de 9 imágenes cargadas</div>
+
+    <div class="info-box" style="margin-bottom:14px">
+      <span class="icon">ℹ️</span>
+      <span>Al menos una imagen es necesaria para generar el documento. Las que no se carguen quedarán vacías en el PDF.</span>
+    </div>
+  </div>
+
+  <div class="footer-cta">
+    <button class="btn-primary" id="btn-process" disabled onclick="goStep3()">
+      📄 Procesar Documento
+    </button>
+  </div>
+</div>
+
+
+<!-- ══════════════════════════════════════
+     STEP 3 — Processing & result
+══════════════════════════════════════ -->
+<div id="screen3" class="screen">
+  <div class="header">
+    <button class="header-back" onclick="goBack(2)">←</button>
+    <span class="header-title">Procesando</span>
+    <span class="step-badge" id="step3-badge">Paso 3 de 3</span>
+  </div>
+  <div class="progress-wrap">
+    <div class="progress-label"><span id="prog-label">Generando certificado…</span><span id="prog-pct">0%</span></div>
+    <div class="progress-track"><div class="progress-fill" id="prog-bar" style="width:0%"></div></div>
+  </div>
+
+  <div class="screen-body">
+
+    <!-- Processing spinner -->
+    <div id="processing-state" class="card" style="text-align:center;padding:40px 20px">
+      <div style="font-size:48px;margin-bottom:12px">⚙️</div>
+      <div class="section-title">Procesando documento…</div>
+      <p style="font-size:14px;color:var(--gray-text);margin-top:8px">
+        Espere mientras verificamos los datos y generamos la evidencia digital.
+      </p>
+    </div>
+
+    <!-- Success state -->
+    <div id="success-state" style="display:none">
+      <div class="card" style="text-align:center;padding:30px 20px">
+        <div class="success-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg>
+          <div class="badge-gear">⚙️</div>
+        </div>
+        <div class="result-title">Documento Generado<br>Exitosamente</div>
+        <div class="result-sub">La evidencia de mantenimiento preventivo está lista para descargar.</div>
+
+        <div class="summary-card">
+          <div class="summary-row">
+            <div class="summary-label">Unidad</div>
+            <div class="summary-value" id="sum-unidad">—</div>
+          </div>
+          <div class="summary-row">
+            <div class="summary-label">Placas</div>
+            <div class="summary-value" id="sum-placas">—</div>
+          </div>
+          <div class="summary-row">
+            <div class="summary-label">VIN</div>
+            <div class="summary-mono" id="sum-vin">—</div>
+          </div>
+          <div class="summary-row">
+            <div class="summary-label">Transportista</div>
+            <div class="summary-value" id="sum-transportista">—</div>
+          </div>
+          <div class="summary-row">
+            <div class="summary-label">Fotos cargadas</div>
+            <div class="summary-value" id="sum-photos">—</div>
+          </div>
+          <div class="summary-row">
+            <div class="summary-label">Estado</div>
+            <div class="status-active"><span class="status-dot"></span>Mantenimiento Registrado</div>
+          </div>
+        </div>
+
+        <div class="encrypt-banner">🛡️ Documento generado con cifrado 256-bit</div>
+      </div>
+
+      <div style="padding:0 0 20px">
+        <button class="btn-primary" onclick="exportPDF('view')">📄 Ver Documento Final</button>
+        <button class="btn-outline" onclick="exportPDF('download')">⬇️ Descargar PDF</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="navbar">
+    <div class="nav-item active">
+      <div class="nav-icon">⊞</div>
+      <span>Registro</span>
+    </div>
+    <div class="nav-item">
+      <div class="nav-icon">📄</div>
+      <span>Documentos</span>
+    </div>
+    <div class="nav-item">
+      <div class="nav-icon">⚙️</div>
+      <span>Ajustes</span>
+    </div>
+  </div>
+</div>
+
+
+<script>
+// ── State ──
+const photos = new Array(9).fill(null);
+let uploadCount = 0;
+
+// ── Navigation ──
+function showScreen(n) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById('screen' + n).classList.add('active');
+  window.scrollTo(0, 0);
+}
+function goBack(n) { showScreen(n); }
+
+// ── Step 1 validation ──
+const REQUIRED_FIELDS = [
+  ['f-unidad',       'inp-unidad'],
+  ['f-odometro',     'inp-odometro'],
+  ['f-placas',       'inp-placas'],
+  ['f-vin',          'inp-vin'],
+  ['f-fecha',        'inp-fecha'],
+  ['f-transportista','inp-transportista'],
+  ['f-num-mant',     'inp-num-mant'],
+];
+
+function validate1() {
+  let ok = true;
+  REQUIRED_FIELDS.forEach(([fid, iid]) => {
+    if (!document.getElementById(iid).value.trim()) {
+      document.getElementById(fid).classList.add('error');
+      ok = false;
+    }
+  });
+  return ok;
+}
+function clearError(fid) {
+  document.getElementById(fid).classList.remove('error');
+}
+function goStep2() {
+  if (!validate1()) return;
+  showScreen(2);
+}
+
+// ── Photo handling ──
+function triggerFile(idx) { document.getElementById('file' + idx).click(); }
+
+function handleFile(idx, input) {
+  const file = input.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = e => {
+    photos[idx] = e.target.result;
+
+    const slotEl = document.getElementById('slot' + idx);
+    const old = slotEl.querySelector('img');
+    if (old) old.remove();
+    const img = document.createElement('img');
+    img.src = e.target.result;
+    slotEl.insertBefore(img, slotEl.firstChild);
+    slotEl.classList.add('has-image');
+
+    uploadCount = photos.filter(Boolean).length;
+    document.getElementById('upload-count').textContent =
+      uploadCount + ' de 9 imágenes cargadas';
+    document.getElementById('btn-process').disabled = uploadCount === 0;
+  };
+  reader.readAsDataURL(file);
+}
+
+// ── Step 3 ──
+function goStep3() {
+  showScreen(3);
+  animateProgress();
+}
+
+function animateProgress() {
+  const bar   = document.getElementById('prog-bar');
+  const pct   = document.getElementById('prog-pct');
+  const label = document.getElementById('prog-label');
+  const steps = [
+    [20,  'Validando datos del vehículo…'],
+    [45,  'Verificando imágenes…'],
+    [70,  'Generando documento…'],
+    [90,  'Aplicando firma digital…'],
+    [100, '100% Completo'],
+  ];
+  let i = 0;
+  const tick = () => {
+    if (i >= steps.length) { showSuccess(); return; }
+    const [w, msg] = steps[i++];
+    bar.style.width = w + '%';
+    pct.textContent = w + '%';
+    label.textContent = msg;
+    setTimeout(tick, 600);
+  };
+  setTimeout(tick, 300);
+}
+
+function showSuccess() {
+  document.getElementById('processing-state').style.display = 'none';
+  document.getElementById('success-state').style.display = 'block';
+
+  document.getElementById('sum-unidad').textContent =
+    document.getElementById('inp-unidad').value.trim() || '—';
+  document.getElementById('sum-placas').textContent =
+    document.getElementById('inp-placas').value.trim() || '—';
+  document.getElementById('sum-vin').textContent =
+    document.getElementById('inp-vin').value.trim() || '—';
+  document.getElementById('sum-transportista').textContent =
+    document.getElementById('inp-transportista').value.trim() || '—';
+  document.getElementById('sum-photos').textContent =
+    uploadCount + ' de 9';
+}
+
+// ── PDF export ──
+function exportPDF(mode) {
+  const formData = {
+    unidad:        document.getElementById('inp-unidad').value.trim(),
+    marca:         document.getElementById('inp-marca').value.trim(),
+    modelo:        document.getElementById('inp-modelo').value.trim(),
+    odometro:      document.getElementById('inp-odometro').value.trim(),
+    placas:        document.getElementById('inp-placas').value.trim(),
+    vin:           document.getElementById('inp-vin').value.trim(),
+    fecha:         formatDisplayDate(document.getElementById('inp-fecha').value),
+    transportista: document.getElementById('inp-transportista').value.trim(),
+    numMant:       document.getElementById('inp-num-mant').value.trim(),
+    descripcion:   document.getElementById('inp-descripcion').value.trim(),
+  };
+  buildAndExportPDF(formData, photos, mode);
+}
+
+function formatDisplayDate(str) {
+  if (!str) return '—';
+  const [y, m, d] = str.split('-');
+  return d + '/' + m + '/' + y;
+}
+
+// ── PWA: Service Worker ──
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('/service-worker.js')
+      .then(reg => console.log('SW:', reg.scope))
+      .catch(err => console.warn('SW failed:', err));
+  });
+}
+
+// ── PWA: Install banner ──
+let deferredInstallPrompt = null;
+const installBanner = document.getElementById('install-banner');
+
+window.addEventListener('beforeinstallprompt', e => {
+  e.preventDefault();
+  deferredInstallPrompt = e;
+  if (!sessionStorage.getItem('install-dismissed')) {
+    installBanner.style.display = 'flex';
+  }
+});
+function installApp() {
+  installBanner.style.display = 'none';
+  if (deferredInstallPrompt) {
+    deferredInstallPrompt.prompt();
+    deferredInstallPrompt.userChoice.then(() => { deferredInstallPrompt = null; });
+  }
+}
+function dismissInstall() {
+  installBanner.style.display = 'none';
+  sessionStorage.setItem('install-dismissed', '1');
+}
+window.addEventListener('appinstalled', () => {
+  installBanner.style.display = 'none';
+});
+</script>
+
+<!-- PWA install banner -->
+<div id="install-banner" style="
+  display:none; position:fixed; bottom:80px; left:50%; transform:translateX(-50%);
+  width:calc(100% - 40px); max-width:390px;
+  background:#111827; color:#fff; border-radius:14px;
+  padding:14px 16px; align-items:center; gap:12px;
+  box-shadow:0 8px 32px rgba(0,0,0,0.28); z-index:999;
+">
+  <span style="font-size:28px">📲</span>
+  <div style="flex:1">
+    <div style="font-size:14px;font-weight:700;margin-bottom:2px">Instalar App</div>
+    <div style="font-size:12px;opacity:.7">Agregar a pantalla de inicio</div>
+  </div>
+  <button onclick="installApp()" style="
+    background:#1B4FD8;color:#fff;border:none;border-radius:8px;
+    padding:8px 14px;font-size:13px;font-weight:700;cursor:pointer;white-space:nowrap
+  ">Instalar</button>
+  <button onclick="dismissInstall()" style="
+    background:transparent;color:#fff;border:none;
+    font-size:20px;cursor:pointer;padding:4px;opacity:.6
+  ">&#215;</button>
+</div>
+
+</body>
+</html>

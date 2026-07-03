@@ -1,0 +1,9 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(mkdir -p \"C:\\\\Users\\\\onlyf\\\\OneDrive\\\\Documentos\\\\vehicleregistration\\\\.claude\")",
+      "mcp__Claude_Preview__preview_start",
+      "Bash(C:\\\\Users\\\\onlyf\\\\AppData\\\\Local\\\\Programs\\\\Python\\\\Python314\\\\python.exe -c \"from PIL import Image, ImageDraw; print\\('ok'\\)\")"
+    ]
+  }
+}
