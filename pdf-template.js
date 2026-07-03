@@ -23,7 +23,7 @@ async function buildAndExportPDF(formData, photos, mode = 'download') {
   // 1. Fetch the template HTML
   let templateHTML;
   try {
-    const res = await fetch('certificate-template.html');
+    const res = await fetch(new URL('certificate-template.html', document.baseURI).href);
     if (!res.ok) throw new Error('fetch failed');
     templateHTML = await res.text();
   } catch (e) {

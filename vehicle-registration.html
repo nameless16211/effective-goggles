@@ -6,7 +6,7 @@
 <title>Mantenimiento Preventivo</title>
 
 <!-- PWA -->
-<link rel="manifest" href="/manifest.json"/>
+<link rel="manifest" href="manifest.json"/>
 <meta name="theme-color" content="#1B4FD8"/>
 <meta name="mobile-web-app-capable" content="yes"/>
 <meta name="apple-mobile-web-app-capable" content="yes"/>
@@ -747,7 +747,7 @@ function formatDisplayDate(str) {
 // ── PWA: Service Worker ──
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => {
-    navigator.serviceWorker.register('/service-worker.js')
+    navigator.serviceWorker.register('/effective-goggles/service-worker.js')
       .then(reg => console.log('SW:', reg.scope))
       .catch(err => console.warn('SW failed:', err));
   });

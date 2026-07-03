@@ -2,15 +2,16 @@
 const CACHE_NAME = 'vehreg-v1';
 
 // Files to pre-cache on install (your app shell)
+const BASE = '/effective-goggles';
 const APP_SHELL = [
-  '/vehicle-registration.html',
-  '/certificate-template.html',
-  '/pdf-template.js',
-  '/manifest.json',
-  '/icons/icon-32.png',
-  '/icons/icon-180.png',
-  '/icons/icon-192.png',
-  '/icons/icon-512.png',
+  BASE + '/vehicle-registration.html',
+  BASE + '/certificate-template.html',
+  BASE + '/pdf-template.js',
+  BASE + '/manifest.json',
+  BASE + '/icons/icon-32.png',
+  BASE + '/icons/icon-180.png',
+  BASE + '/icons/icon-192.png',
+  BASE + '/icons/icon-512.png',
 ];
 
 // CDN assets — cached on first use, not pre-cached (too large to fetch on install)
@@ -84,7 +85,7 @@ self.addEventListener('fetch', event => {
         .catch(() => {
           // Network failed and not in cache — return offline fallback if navigating
           if (event.request.mode === 'navigate') {
-            return caches.match('/vehicle-registration.html');
+            return caches.match(BASE + '/vehicle-registration.html');
           }
         });
     })
