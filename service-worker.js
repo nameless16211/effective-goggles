@@ -1,5 +1,5 @@
 // ── Cache name — bump the version string whenever you deploy changes ──
-const CACHE_NAME = 'vehreg-v1';
+const CACHE_NAME = 'vehreg-v2';
 
 // Files to pre-cache on install (your app shell)
 const BASE = '/effective-goggles';
