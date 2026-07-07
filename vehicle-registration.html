@@ -512,7 +512,7 @@
 
       <!-- Slot 0: Piezas Nuevas — full width -->
       <div class="photo-slot-full" id="slot0" onclick="openCameraOrFile(0)">
-        <input type="file" id="file0" accept="image/*" onchange="handleFile(0,this)"/>
+        <input type="file" id="file0" accept="image/*" onclick="event.stopPropagation()" onchange="handleFile(0,this)"/>
         <span class="camera-icon">📷</span>
         <span class="tap-text">Toca para capturar</span>
         <span class="slot-label">📦 Piezas Nuevas</span>
@@ -522,14 +522,14 @@
       <!-- Slots 1-2: Kilometraje / Unidad -->
       <div class="photo-grid-2">
         <div class="photo-slot photo-slot-sq" id="slot1" onclick="openCameraOrFile(1)">
-          <input type="file" id="file1" accept="image/*" onchange="handleFile(1,this)"/>
+          <input type="file" id="file1" accept="image/*" onclick="event.stopPropagation()" onchange="handleFile(1,this)"/>
           <span class="camera-icon">📷</span>
           <span class="tap-text">Toca</span>
           <span class="slot-label">Kilometraje</span>
           <span class="slot-check">✓</span>
         </div>
         <div class="photo-slot photo-slot-sq" id="slot2" onclick="openCameraOrFile(2)">
-          <input type="file" id="file2" accept="image/*" onchange="handleFile(2,this)"/>
+          <input type="file" id="file2" accept="image/*" onclick="event.stopPropagation()" onchange="handleFile(2,this)"/>
           <span class="camera-icon">📷</span>
           <span class="tap-text">Toca</span>
           <span class="slot-label">Unidad (foto)</span>
@@ -543,19 +543,19 @@
       <div class="slot-section-label">Antes del Trabajo</div>
       <div class="photo-grid-3">
         <div class="photo-slot photo-slot-sq" id="slot3" onclick="openCameraOrFile(3)">
-          <input type="file" id="file3" accept="image/*" onchange="handleFile(3,this)"/>
+          <input type="file" id="file3" accept="image/*" onclick="event.stopPropagation()" onchange="handleFile(3,this)"/>
           <span class="camera-icon">📷</span>
           <span class="slot-label">Filtros</span>
           <span class="slot-check">✓</span>
         </div>
         <div class="photo-slot photo-slot-sq" id="slot4" onclick="openCameraOrFile(4)">
-          <input type="file" id="file4" accept="image/*" onchange="handleFile(4,this)"/>
+          <input type="file" id="file4" accept="image/*" onclick="event.stopPropagation()" onchange="handleFile(4,this)"/>
           <span class="camera-icon">📷</span>
           <span class="slot-label">Aceite Motor</span>
           <span class="slot-check">✓</span>
         </div>
         <div class="photo-slot photo-slot-sq" id="slot5" onclick="openCameraOrFile(5)">
-          <input type="file" id="file5" accept="image/*" onchange="handleFile(5,this)"/>
+          <input type="file" id="file5" accept="image/*" onclick="event.stopPropagation()" onchange="handleFile(5,this)"/>
           <span class="camera-icon">📷</span>
           <span class="slot-label">Diferencial</span>
           <span class="slot-check">✓</span>
@@ -568,19 +568,19 @@
       <div class="slot-section-label">Después del Trabajo</div>
       <div class="photo-grid-3">
         <div class="photo-slot photo-slot-sq" id="slot6" onclick="openCameraOrFile(6)">
-          <input type="file" id="file6" accept="image/*" onchange="handleFile(6,this)"/>
+          <input type="file" id="file6" accept="image/*" onclick="event.stopPropagation()" onchange="handleFile(6,this)"/>
           <span class="camera-icon">📷</span>
           <span class="slot-label">Filtros</span>
           <span class="slot-check">✓</span>
         </div>
         <div class="photo-slot photo-slot-sq" id="slot7" onclick="openCameraOrFile(7)">
-          <input type="file" id="file7" accept="image/*" onchange="handleFile(7,this)"/>
+          <input type="file" id="file7" accept="image/*" onclick="event.stopPropagation()" onchange="handleFile(7,this)"/>
           <span class="camera-icon">📷</span>
           <span class="slot-label">Aceite Motor</span>
           <span class="slot-check">✓</span>
         </div>
         <div class="photo-slot photo-slot-sq" id="slot8" onclick="openCameraOrFile(8)">
-          <input type="file" id="file8" accept="image/*" onchange="handleFile(8,this)"/>
+          <input type="file" id="file8" accept="image/*" onclick="event.stopPropagation()" onchange="handleFile(8,this)"/>
           <span class="camera-icon">📷</span>
           <span class="slot-label">Diferencial</span>
           <span class="slot-check">✓</span>
@@ -808,6 +808,7 @@ function capturePhoto() {
 function triggerFile(idx) { document.getElementById('file' + idx).click(); }
 
 function handleFile(idx, input) {
+  closeSheet();
   const file = input.files[0];
   if (!file) return;
   const reader = new FileReader();
